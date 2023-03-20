@@ -11,20 +11,16 @@ export default class App extends React.Component {
       todos: [],
       input: '',
       hideCompleted: false,
-      hiddenTodos: []
     }
   }
   handleChange = (e) => {
     this.setState({input: e.target.value});
   }
-  pickArray = (bool) => {
-    if (bool) {
-      console.log('hidden todos', this.state.hiddenTodos)
-      return this.state.hiddenTodos;
-    } else {
-      console.log('todos', this.state.todos)
-      return this.state.todos;
+  listToRender = () => {
+    if (this.state.hideCompleted) {
+      return this.state.todos.filter(todo => !todo.completed);
     }
+    return this.state.todos;
   }
   handleSubmit = (e) => {
     e.preventDefault();
@@ -53,11 +49,8 @@ export default class App extends React.Component {
       })
       .catch(err => console.error(err));
   }
-//method that filters through the todo state and sets hiddenTodos to the filtered array
-filterCompleted = () => {
-  const hiddenTodos = this.state.todos.filter(todo => !todo.completed);
-  this.setState({hiddenTodos});
-}
+ 
+// Method that filters out the incomplete todos onto 
 toggleHideCompleted = () => {
   this.setState({hideCompleted: !this.state.hideCompleted});
 }
@@ -71,21 +64,20 @@ toggleHideCompleted = () => {
       .catch(err => {
         console.error(err);
       })
-      this.filterCompleted();
   }
   render() {
     return (
       <>
         <h2>Todos: </h2>
         <div>
-          <TodoList todos={this.pickArray(this.state.hideCompleted)} handleTodo={this.handleTodo}/>
+          <TodoList todos={this.listToRender()} handleTodo={this.handleTodo}/>
         </div>
         <div>
           <form onSubmit={(e) => this.handleSubmit(e)}>
             <input type='text' onChange={ this.handleChange} value={this.state.input}/>
             <button type='submit'>Submit</button>
           </form>
-          <button onClick={(e) => this.toggleHideCompleted()}>Hide Completed</button>
+          <button onClick={(e) => this.toggleHideCompleted()}>{this.state.hideCompleted ? 'Show Completed' : 'Hide Completed' }</button>
         </div>
       </>
     )
