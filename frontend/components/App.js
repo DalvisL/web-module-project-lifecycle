@@ -1,5 +1,6 @@
 import React from 'react'
 import TodoList from './TodoList';
+import Form from './Form';
 import axios from 'axios';
 
 const URL = 'http://localhost:9000/api/todos'
@@ -73,10 +74,7 @@ toggleHideCompleted = () => {
           <TodoList todos={this.listToRender()} handleTodo={this.handleTodo}/>
         </div>
         <div>
-          <form onSubmit={(e) => this.handleSubmit(e)}>
-            <input type='text' onChange={ this.handleChange} value={this.state.input}/>
-            <button type='submit'>Submit</button>
-          </form>
+          <Form handleChange={this.handleChange} handleSubmit={this.handleSubmit} input={this.state.input}/>
           <button onClick={(e) => this.toggleHideCompleted()}>{this.state.hideCompleted ? 'Show Completed' : 'Hide Completed' }</button>
         </div>
       </>
