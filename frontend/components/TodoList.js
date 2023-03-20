@@ -8,8 +8,9 @@ export default class TodoList extends React.Component {
   render() {
     return (
       <div>
+        {/* Maps through the state to render the different todos */}
         {this.props.todos.map((todo, index) => {
-          return <Todo key={index} todo={todo} handleTodo={this.props.handleTodo} />
+          return <Todo className='todo' key={index} todo={todo} handleTodo={this.props.handleTodo} />
         })}
       </div>
     )
