@@ -8,54 +8,61 @@ export default class App extends React.Component {
   constructor(props) {
     super(props)
     this.state = {
-      todos: [{
-        id: 1,
-        name: '',
-        completed: false
-      }],
+      todos: [],
       input: '',
-      hideCompleted: false
+      hideCompleted: false,
+      hiddenTodos: []
     }
   }
   handleChange = (e) => {
     this.setState({input: e.target.value});
   }
+  pickArray = (bool) => {
+    if (bool) {
+      console.log('hidden todos', this.state.hiddenTodos)
+      return this.state.hiddenTodos;
+    } else {
+      console.log('todos', this.state.todos)
+      return this.state.todos;
+    }
+  }
   handleSubmit = (e) => {
     e.preventDefault();
-    const todo = {title: this.state.input, done: false};
-    this.setState({input: ''});
-    this.setState({todos: [...this.state.todos, todo]});
+    //post the todo to the URL and update the state with the new todo
+    axios.post(URL, {name: this.state.input})
+      .then(res => {
+        this.setState({todos: [...this.state.todos, res.data.data]});
+        // clear input
+        this.setState({input: ''});
+        console.log(res);
+      })
+      .catch(err => console.error(err));
   }
   handleTodo = (id) => {
-    // toggles completed state of the todo with the id passed in
-    // patches the result to the server using the id as the endpoint
-    // then updates the state of the todo with the new data
-    const prevState = this.state.todos;
-    const todo = this.state.todos.find(todo => todo.id === id);
-    todo.completed = !todo.completed;
-    axios.patch(`${URL}/${id}`, todo)
+    //patch the todo with the id to the URL and update the state with the new todo
+    axios.patch(`${URL}/${id}`)
       .then(res => {
-        console.log(todo.completed);
-        this.setState(prevState => ({
-          todos: prevState.todos.map(todo => {
-            if (todo.id === id) {
-              return {
-                ...todo,
-                completed: todo.completed
-              };
-            } else {
-              return todo;
-            }
-          })
-        }));
+        const todoList = this.state.todos.map(todo => {
+          if (todo.id === id) {
+            todo.completed = !todo.completed;
+          }
+          return todo;
+        })
+        this.setState({todos: todoList});
+        console.log(res);
       })
-      .catch(err => {
-        console.error(err);
-      }
-    )
+      .catch(err => console.error(err));
   }
+//method that filters through the todo state and sets hiddenTodos to the filtered array
+filterCompleted = () => {
+  const hiddenTodos = this.state.todos.filter(todo => !todo.completed);
+  this.setState({hiddenTodos});
+}
+toggleHideCompleted = () => {
+  this.setState({hideCompleted: !this.state.hideCompleted});
+}
   componentDidMount() {
-    console.log('component Did Mount');
+    console.log('component did mount')
     axios.get(URL)
       .then(res => {
         this.setState({todos: res.data.data});
@@ -64,22 +71,21 @@ export default class App extends React.Component {
       .catch(err => {
         console.error(err);
       })
-  }
-  // function that checks if the component has updated and what updated:
-  componentDidUpdate(prevProps, prevState) {
-    console.log('component Did Update');
-    console.log('prevProps', prevProps);
-    console.log('prevState', prevState);
+      this.filterCompleted();
   }
   render() {
     return (
       <>
         <h2>Todos: </h2>
         <div>
-          <TodoList todos={this.state.todos} handleTodo={this.handleTodo}/>
+          <TodoList todos={this.pickArray(this.state.hideCompleted)} handleTodo={this.handleTodo}/>
         </div>
         <div>
-          <input type='text' onChange={ this.handleChange} value={this.state.input}/>
+          <form onSubmit={(e) => this.handleSubmit(e)}>
+            <input type='text' onChange={ this.handleChange} value={this.state.input}/>
+            <button type='submit'>Submit</button>
+          </form>
+          <button onClick={(e) => this.toggleHideCompleted()}>Hide Completed</button>
         </div>
       </>
     )
